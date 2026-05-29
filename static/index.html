@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OncoGemma-v2 - Advanced Digital Pathology Platform</title>
+    <!-- CSS stylesheets -->
+    <link rel="stylesheet" href="/static/style.css?v=7">
+    <!-- Marked library for parsing markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Html2Pdf bundle for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <!-- Ambient animated background glows -->
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Application Header -->
+        <header>
+            <div class="logo-container">
+                <div class="logo-icon-box">
+                    <i data-lucide="activity"></i>
+                </div>
+                <h1 class="app-title">OncoGemma-v2</h1>
+            </div>
+            <p class="app-subtitle">
+                Advanced morphological slide analysis and CAP-compliant synoptic clinical reporting powered by Google Cloud Vertex AI (Gemini 1.5 Flash & Claude 3.5 Sonnet).
+            </p>
+        </header>
+
+        <!-- DASHBOARD CONTAINER -->
+        <div id="dashboard-view" class="animate-fade">
+            <!-- INPUT SUBMISSION FORM -->
+            <form id="analysis-form" class="glass-panel dashboard-grid">
+                <!-- Left Input Panel: Upload Slide & Exam Select -->
+                <div>
+                    <div class="form-group">
+                        <span class="label-title">Slide Image Upload</span>
+                        <div id="dropzone" class="dropzone">
+                            <div class="upload-icon-box">
+                                <i data-lucide="upload-cloud"></i>
+                            </div>
+                            <div class="upload-text-box">
+                                <p class="upload-main-text" id="dropzone-text">Click or drag WSI slide here</p>
+                                <p class="upload-sub-text">Supports SVS pathology files or high-res images (PNG, JPG)</p>
+                            </div>
+                            <input type="file" id="slide-file" accept="image/*,.svs" style="display: none;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <span class="label-title">Examination Protocol</span>
+                        <div class="segment-control">
+                            <button type="button" class="segment-btn active" data-exam="H&E">H&E Stain</button>
+                            <button type="button" class="segment-btn" data-exam="IHC">IHC Stain</button>
+                            <button type="button" class="segment-btn" data-exam="Lymph Node (SLNB)">Lymph Node (SLNB)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Input Panel: Patient History Notes & Submit -->
+                <div style="display: flex; flex-direction: column;">
+                    <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+                        <span class="label-title">Patient Clinical History</span>
+                        <textarea id="patient-notes" class="text-area-input" placeholder="Type key clinical indications, tumor margins, previous diagnosis, or general patient history here..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="pdf-upload-row">
+                            <span class="pdf-label">Attach clinical dossier (PDF)</span>
+                            <label for="pdf-file" class="pdf-btn" id="pdf-btn-label">Browse PDF</label>
+                            <input type="file" id="pdf-file" class="pdf-input" accept=".pdf">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="submit-btn" disabled>
+                        <i data-lucide="shield-alert"></i>
+                        <span>Initiate AI Diagnostic</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- PIPELINE PROGRESS INTERFACE (HIDDEN BY DEFAULT) -->
+            <div id="pipeline-board" class="glass-panel" style="display: none; margin-top: 2.5rem;">
+                <h3 class="label-title" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="cpu" style="width: 1.25rem; height: 1.25rem;"></i>
+                    Visual Compute Pipeline Tracker
+                </h3>
+                <div class="pipeline-container">
+                    <div class="pipeline-step" id="step-upload">
+                        <div class="step-indicator">1</div>
+                        <div class="step-info">
+                            <p class="step-label">Ingesting Pathology Slide</p>
+                            <p class="step-desc" id="upload-status-text">Buffering slide file onto GCS temporary nodes...</p>
+                        </div>
+                        <div class="step-spinner"></div>
+                    </div>
+                    <div class="pipeline-step" id="step-extract">
+                        <div class="step-indicator">2</div>
+                        <div class="step-info">
+                            <p class="step-label">Pyramidal Contour Extraction</p>
+                            <p class="step-desc">OpenSlide processing and OpenCV Otsu segmentation on high-res tissue blocks...</p>
+                        </div>
+                        <div class="step-spinner"></div>
+                    </div>
+                    <div class="pipeline-step" id="step-vision">
+                        <div class="step-indicator">3</div>
+                        <div class="step-info">
+                            <p class="step-label">Multimodal Hotspot Mapping (Gemini 1.5 Flash)</p>
+                            <p class="step-desc">Scanning visual fields for mitosis, nuclear grade atypia, and cell density markers...</p>
+                        </div>
+                        <div class="step-spinner"></div>
+                    </div>
+                    <div class="pipeline-step" id="step-report">
+                        <div class="step-indicator">4</div>
+                        <div class="step-info">
+                            <p class="step-label">Dossier Synthesis & Clinical Report (Claude 3.5 Sonnet)</p>
+                            <p class="step-desc">Synthesizing Nottingham grading thresholds and writing CAP-compliant diagnostic report...</p>
+                        </div>
+                        <div class="step-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAGNOSTIC ANALYSIS RESULTS VIEW (HIDDEN BY DEFAULT) -->
+        <div id="results-view" class="glass-panel animate-fade" style="display: none;">
+            <div class="results-header">
+                <div class="results-title-box">
+                    <div class="success-badge">
+                        <i data-lucide="check-circle-2"></i>
+                    </div>
+                    <div>
+                        <h2 class="results-meta-title">Clinical Diagnostics Completed</h2>
+                        <p class="results-meta-desc" id="results-meta-subtitle">Nottingham Score & Biomarker profile generated</p>
+                    </div>
+                </div>
+                <div class="action-btn-group">
+                    <button id="download-pdf-btn" class="btn-secondary">
+                        <i data-lucide="file-down"></i>
+                        <span>Download PDF Dossier</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Analysis Dashboard Columns -->
+            <div class="results-grid">
+                <!-- Visual Mapping Column -->
+                <div class="roi-sidebar">
+                    <div class="roi-card">
+                        <span class="label-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="crosshair" style="width: 1.1rem; height: 1.1rem;"></i>
+                            Tissue ROI Hotspots
+                        </span>
+                        <!-- Visual Slide Overlay Map -->
+                        <div class="roi-viewer-box">
+                            <img id="overlay-viewer" src="" alt="WSI Coordinate Overlay">
+                            <div class="roi-coordinate-tag">Slide Map Overview</div>
+                        </div>
+                        
+                        <!-- High Magnification Crop -->
+                        <div class="roi-viewer-box" style="margin-top: 1.5rem;">
+                            <img id="patch-viewer" src="" alt="Tissue Crop Hotspot">
+                            <div class="roi-coordinate-tag" id="patch-coordinate-label">Patch: 40x magnification</div>
+                        </div>
+
+                        <!-- Active Patches Carousel -->
+                        <div class="roi-gallery" id="roi-gallery-container">
+                            <!-- Patches thumbnails inserted dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Structured Synoptic Report -->
+                <div>
+                    <div class="report-content-panel">
+                        <span class="label-title" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                            <i data-lucide="file-text" style="width: 1.1rem; height: 1.1rem;"></i>
+                            Generated Synoptic Report
+                        </span>
+                        <div class="report-view markdown-body" id="report-view-container">
+                            <!-- Synoptic report markdown text rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reset Action -->
+            <div class="nav-bottom">
+                <button id="reset-analysis-btn" class="nav-bottom-link">
+                    <i data-lucide="arrow-left"></i>
+                    <span>Analyze Another Slide</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HIDDEN CONTAINER EXCLUSIVELY FOR CLEAN WHITE-PAPER PRINTING -->
+    <div id="report-print-container"></div>
+
+    <!-- Frontend logic script -->
+    <script src="/static/app.js?v=7"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+__pycache__/
+static/data/
+*.log
+*.svs
+*.png
+*.jpg
+*.jpeg
+.DS_Store
+.idea/
+.vscode/
+.env
