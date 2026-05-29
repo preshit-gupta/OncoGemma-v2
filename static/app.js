@@ -396,19 +396,90 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- PDF DOSSIER DOWNLOAD ---
-    downloadPdfBtn.addEventListener("click", () => {
+    downloadPdfBtn.addEventListener("click", async () => {
         if (!analysisResultData) return;
 
-        const opt = {
-            margin: 15,
-            filename: `OncoGemma_Synoptic_Report_${Date.now()}.pdf`,
-            image: { type: 'jpeg', quality: 1.0 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+        // Disable button during generation
+        downloadPdfBtn.setAttribute("disabled", "true");
+        const btnText = downloadPdfBtn.querySelector("span");
+        const originalText = btnText.innerText;
+        btnText.innerText = "Generating PDF...";
 
-        // Render PDF directly using html2pdf library targeting our white-paper styled printable print container
-        html2pdf().set(opt).from(reportPrintContainer).save();
+        try {
+            // Create a temporary container in the visible flow but behind everything
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = reportPrintContainer.innerHTML;
+            
+            // Apply clean white-paper styling to the temporary div matching report-print-container rules
+            tempDiv.style.position = "absolute";
+            tempDiv.style.left = "0";
+            tempDiv.style.top = "0";
+            tempDiv.style.width = "800px";
+            tempDiv.style.background = "#ffffff";
+            tempDiv.style.color = "#000000";
+            tempDiv.style.padding = "40px";
+            tempDiv.style.boxSizing = "border-box";
+            tempDiv.style.fontFamily = "'Calibri', 'Arial', sans-serif";
+            tempDiv.style.zIndex = "-10000"; // Position it behind everything
+            
+            // Inline headers and formatting styles for html2canvas compatibility
+            const h1s = tempDiv.getElementsByTagName("h1");
+            for (let h of h1s) {
+                h.style.fontSize = "20pt";
+                h.style.color = "#000000";
+                h.style.borderBottom = "2px solid #000000";
+                h.style.paddingBottom = "8px";
+                h.style.marginBottom = "20px";
+                h.style.fontFamily = "sans-serif";
+            }
+            
+            const h2s = tempDiv.getElementsByTagName("h2");
+            for (let h of h2s) {
+                h.style.fontSize = "14pt";
+                h.style.color = "#000000";
+                h.style.marginTop = "25px";
+                h.style.marginBottom = "10px";
+                h.style.borderBottom = "1px solid #cccccc";
+                h.style.paddingBottom = "5px";
+                h.style.fontFamily = "sans-serif";
+            }
+            
+            const ps = tempDiv.getElementsByTagName("p");
+            for (let p of ps) {
+                p.style.fontSize = "10.5pt";
+                p.style.color = "#000000";
+                p.style.lineHeight = "1.6";
+                p.style.marginBottom = "10px";
+            }
+
+            document.body.appendChild(tempDiv);
+
+            const opt = {
+                margin: 15,
+                filename: `OncoGemma_Synoptic_Report_${Date.now()}.pdf`,
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    scrollY: 0,
+                    scrollX: 0
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Generate PDF
+            await html2pdf().set(opt).from(tempDiv).save();
+
+            // Clean up
+            document.body.removeChild(tempDiv);
+        } catch (error) {
+            console.error("PDF generation failed:", error);
+            alert("Failed to generate PDF. Please try again.");
+        } finally {
+            downloadPdfBtn.removeAttribute("disabled");
+            btnText.innerText = originalText;
+        }
     });
 
     // Utilities
