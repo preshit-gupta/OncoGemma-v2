@@ -406,58 +406,16 @@ document.addEventListener("DOMContentLoaded", () => {
         btnText.innerText = "Generating PDF...";
 
         try {
-            // Create a temporary container in the visible flow but behind everything
-            const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = reportPrintContainer.innerHTML;
-            
-            // Apply clean white-paper styling to the temporary div matching report-print-container rules
-            tempDiv.style.position = "absolute";
-            tempDiv.style.left = "0";
-            tempDiv.style.top = "0";
-            tempDiv.style.width = "800px";
-            tempDiv.style.background = "#ffffff";
-            tempDiv.style.color = "#000000";
-            tempDiv.style.padding = "40px";
-            tempDiv.style.boxSizing = "border-box";
-            tempDiv.style.fontFamily = "'Calibri', 'Arial', sans-serif";
-            tempDiv.style.zIndex = "-10000"; // Position it behind everything
-            
-            // Inline headers and formatting styles for html2canvas compatibility
-            const h1s = tempDiv.getElementsByTagName("h1");
-            for (let h of h1s) {
-                h.style.fontSize = "20pt";
-                h.style.color = "#000000";
-                h.style.borderBottom = "2px solid #000000";
-                h.style.paddingBottom = "8px";
-                h.style.marginBottom = "20px";
-                h.style.fontFamily = "sans-serif";
-            }
-            
-            const h2s = tempDiv.getElementsByTagName("h2");
-            for (let h of h2s) {
-                h.style.fontSize = "14pt";
-                h.style.color = "#000000";
-                h.style.marginTop = "25px";
-                h.style.marginBottom = "10px";
-                h.style.borderBottom = "1px solid #cccccc";
-                h.style.paddingBottom = "5px";
-                h.style.fontFamily = "sans-serif";
-            }
-            
-            const ps = tempDiv.getElementsByTagName("p");
-            for (let p of ps) {
-                p.style.fontSize = "10.5pt";
-                p.style.color = "#000000";
-                p.style.lineHeight = "1.6";
-                p.style.marginBottom = "10px";
-            }
+            // Override the stylesheet's display rule inline to make it part of the document flow
+            reportPrintContainer.style.display = "block";
 
-            document.body.appendChild(tempDiv);
+            // Yield execution to the browser layout engine to paint and render the elements
+            await new Promise(resolve => setTimeout(resolve, 250));
 
             const opt = {
                 margin: 15,
                 filename: `OncoGemma_Synoptic_Report_${Date.now()}.pdf`,
-                image: { type: 'jpeg', quality: 1.0 },
+                image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true, 
@@ -468,15 +426,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Generate PDF
-            await html2pdf().set(opt).from(tempDiv).save();
+            // Generate and save the PDF using the now fully-visible container
+            await html2pdf().set(opt).from(reportPrintContainer).save();
 
-            // Clean up
-            document.body.removeChild(tempDiv);
         } catch (error) {
             console.error("PDF generation failed:", error);
-            alert("Failed to generate PDF. Please try again.");
+            alert("Automated PDF download encountered a browser rendering issue. Opening the print/save dialog instead.");
+            window.print();
         } finally {
+            // Hide the container again
+            reportPrintContainer.style.display = "none";
+
+            // Re-enable button
             downloadPdfBtn.removeAttribute("disabled");
             btnText.innerText = originalText;
         }

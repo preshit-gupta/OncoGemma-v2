@@ -155,7 +155,7 @@ header {
     font-size: 1.1rem;
     color: var(--text-muted);
     font-weight: 300;
-    max-width: 600px;
+    max-w: 600px;
     margin: 0.5rem auto 0;
 }
 
@@ -654,7 +654,7 @@ header {
     height: auto;
     display: block;
     max-height: 250px;
-    object-fit: contain;
+    object-contain: fit;
 }
 
 .roi-coordinate-tag {
@@ -875,6 +875,8 @@ header {
         margin-bottom: 8px !important;
         border-bottom: 1px solid #cccccc !important;
         padding-bottom: 3px !important;
+        border-radius: 0 !important;
+        border-width: 0 0 1px 0 !important;
     }
     
     #report-print-container p, #report-print-container li {
@@ -885,9 +887,7 @@ header {
 
 /* Off-screen styling to allow pdf generation without rendering on screen */
 #report-print-container {
-    position: absolute;
-    left: -9999px;
-    top: -9999px;
+    display: none;
     width: 800px;
     background: #ffffff;
     color: #000000;
