@@ -1,4 +1,4 @@
-/* OncoGemma-v2 Application Interface Controller */
+/* OncoGemma Application Interface Controller */
 
 document.addEventListener("DOMContentLoaded", () => {
     // Initialize Lucide Icons
@@ -267,6 +267,15 @@ document.addEventListener("DOMContentLoaded", () => {
             element.querySelector(".step-indicator").innerHTML = '<i data-lucide="check" style="width: 1.1rem; height: 1.1rem;"></i>';
             lucide.createIcons();
         }
+    }
+
+    function resetPipelineSteps() {
+        [stepUpload, stepExtract, stepVision, stepReport].forEach((step, idx) => {
+            step.classList.remove("active", "complete");
+            step.querySelector(".step-indicator").innerText = idx + 1;
+        });
+        uploadStatusText.innerText = "Buffering slide file onto GCS temporary nodes...";
+        lucide.createIcons();
     }
 
     // --- RESULTS VIEWER & INTERACTIONS ---

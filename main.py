@@ -27,7 +27,6 @@ from google.cloud import aiplatform
 PROJECT_ID = "oncogemma"
 REGION = "us-east5"
 BUCKET_NAME = "oncogemma-wsi-uploads"
-
 # Load Hugging Face API Token dynamically from env or .env file
 HF_TOKEN = os.getenv("HF_TOKEN", "")
 if not HF_TOKEN and os.path.exists(".env"):
@@ -51,7 +50,7 @@ except ImportError:
 # Import local slide extractor
 from extract_patch import extract_tissue_patches
 
-app = FastAPI(title="OncoGemma-v2 Backend")
+app = FastAPI(title="OncoGemma Backend")
 
 # Ensure static directories exist
 os.makedirs("static", exist_ok=True)

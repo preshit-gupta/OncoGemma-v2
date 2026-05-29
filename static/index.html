@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OncoGemma-v2 - Advanced Digital Pathology Platform</title>
+    <title>OncoGemma - Cancer Diagnostics Copilot</title>
     <!-- CSS stylesheets -->
     <link rel="stylesheet" href="/static/style.css?v=7">
     <!-- Marked library for parsing markdown -->
@@ -29,10 +29,10 @@
                 <div class="logo-icon-box">
                     <i data-lucide="activity"></i>
                 </div>
-                <h1 class="app-title">OncoGemma-v2</h1>
+                <h1 class="app-title">OncoGemma</h1>
             </div>
             <p class="app-subtitle">
-                Advanced morphological slide analysis and CAP-compliant synoptic clinical reporting powered by Google Cloud Vertex AI (Gemini 1.5 Flash & Claude 3.5 Sonnet).
+                Cancer Diagnostics Copilot for hospitals and pathology labs
             </p>
         </header>
 
@@ -114,7 +114,7 @@
                     <div class="pipeline-step" id="step-vision">
                         <div class="step-indicator">3</div>
                         <div class="step-info">
-                            <p class="step-label">Multimodal Hotspot Mapping (Gemini 1.5 Flash)</p>
+                            <p class="step-label">Multimodal Hotspot Mapping (MedSigLIP)</p>
                             <p class="step-desc">Scanning visual fields for mitosis, nuclear grade atypia, and cell density markers...</p>
                         </div>
                         <div class="step-spinner"></div>
@@ -122,7 +122,7 @@
                     <div class="pipeline-step" id="step-report">
                         <div class="step-indicator">4</div>
                         <div class="step-info">
-                            <p class="step-label">Dossier Synthesis & Clinical Report (Claude 3.5 Sonnet)</p>
+                            <p class="step-label">Dossier Synthesis & Clinical Report (MedGemma 1.5)</p>
                             <p class="step-desc">Synthesizing Nottingham grading thresholds and writing CAP-compliant diagnostic report...</p>
                         </div>
                         <div class="step-spinner"></div>
@@ -160,6 +160,7 @@
                             <i data-lucide="crosshair" style="width: 1.1rem; height: 1.1rem;"></i>
                             Tissue ROI Hotspots
                         </span>
+
                         <!-- Visual Slide Overlay Map -->
                         <div class="roi-viewer-box">
                             <img id="overlay-viewer" src="" alt="WSI Coordinate Overlay">
